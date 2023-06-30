@@ -1,0 +1,23 @@
+{
+  "slug": "svg-theme",
+  "name": "svg_theme Demo",
+  "version": "2.0.0",
+  "license": "MIT",
+  "brand": "pachde",
+  "author": "pachde",
+  "authorEmail": "pcdempsey@live.com",
+  "authorUrl": "",
+  "pluginUrl": "",
+  "manualUrl": "https://github.com/Paul-Dempsey/svg_theme/docs/svg_theme.md",
+  "sourceUrl": "https://github.com/Paul-Dempsey/svg_theme",
+  "donateUrl": "",
+  "changelogUrl": "",
+  "modules": [
+    {
+      "slug": "svg-theme-demo",
+      "name": "Demo",
+      "description": "Demo module using SVG theming",
+      "tags": [ "Blank" ]
+    }
+  ]
+}

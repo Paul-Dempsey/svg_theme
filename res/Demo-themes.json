@@ -1,0 +1,76 @@
+[
+    {
+        "name": "Light",
+        "theme": {
+            "panel": {
+                "fill": "#e6e6e6"
+            },
+            "logo-circle": {
+                "stroke": {
+                    "color": "#272727",
+                    "width": 6
+                }
+            },
+            "logo-text": {
+                "fill": "#272727",
+                "stroke": "#d7b813"
+            },
+            "fill-lin": {
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#4e8dbf", "offset": 0 }
+                    ]
+                }
+            },
+            "fill-rad": { 
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#4e8dbf00" },
+                        { "index": 1, "color": "#4e8dbfff" }
+                    ]
+                }
+            },
+            "fill-color-stroke-color": {
+                "fill": "#4e8dbf",
+                "stroke": "#29e038"
+            }
+        }
+    },
+    {
+        "name": "Dark",
+        "theme": {
+            "panel": {
+                "fill": "#202b4a"
+            },
+            "logo-circle": {
+                "stroke": {
+                    "color": "#e0deb7",
+                    "width": 2
+                }
+            },
+            "logo-text": {
+                "fill": "#e8971d",
+                "stroke": "#754e12"
+            },
+            "fill-lin": {
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#dae26f", "offset": 0.15 }
+                    ]
+                }
+            },
+            "fill-rad": { 
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#952a9cff" },
+                        { "index": 1, "color": "#952a9c00" }
+                    ]
+                }
+            },
+            "fill-color-stroke-color": {
+                "fill": "#29e038",
+                "stroke": "#4e8dbf"
+            }
+        }
+    }
+]
