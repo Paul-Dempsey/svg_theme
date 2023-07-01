@@ -5,6 +5,32 @@
             "panel": {
                 "fill": "#e6e6e6"
             },
+            "screw-rim": {
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#ABA9A9" },
+                        { "index": 1, "color": "#8F8F8F" }
+                    ]
+                }
+            },
+            "screw-bevel": {
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#F5F5F5" },
+                        { "index": 1, "color": "#C2C2C2" }
+                    ]
+                }
+            },
+            "screw-face":{
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#EBEBEB" },
+                        { "index": 1, "color": "#CCCCCC" }
+                    ]
+                }
+            },
+            "screw-slot": { "fill": "#8C8C8C" },
+
             "logo-circle": {
                 "stroke": {
                     "color": "#272727",
@@ -42,6 +68,33 @@
             "panel": {
                 "fill": "#202b4a"
             },
+
+            "screw-rim": {
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#303030" },
+                        { "index": 1, "color": "#222222" }
+                    ]
+                }
+            },
+            "screw-bevel": {
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#636363" },
+                        { "index": 1, "color": "#2B2B2B" }
+                    ]
+                }
+            },
+            "screw-face":{
+                "fill": {
+                    "gradient": [
+                        { "index": 0, "color": "#4C4C4C" },
+                        { "index": 1, "color": "#3B3B3B" }
+                    ]
+                }
+            },
+            "screw-slot": { "fill":"#171717" },
+
             "logo-circle": {
                 "stroke": {
                     "color": "#e0deb7",

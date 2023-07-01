@@ -1,34 +1,17 @@
-/* Copyright (C) 2023 Paul Chase Dempsey pcdempsey@live.com
- *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
- *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- *
- * 1. The origin of this software must not be misrepresented; you must not
- * claim that you wrote the original software. If you use this software
- * in a product, an acknowledgment in the product documentation would be
- * appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- * misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
- *
- * This software depends on and extends nanosvg.
- * nanosvg, Copyright (c) 2013-14 Mikko Mononen memon@inside.org
- * See nanosvg.h for license information.
- * 
- * This software depends on Jansson for JSON deserialization
- * Jansson, Copyright (c) 2009-2016 Petri Lehtinen <petri@digip.org> licensed under the MIT license.
- *
- */
+// svgtheme.hpp - lightweight SVG themeing based on nanosvg,
+// designed primarily for VCV Rack.
+//
+// See the end of this file for copyright and license information.
 
+// VCV Rack-specific functionality is provided by also including 
+// `svt_rack.hpp` as shown in the followong example.
+//
 // One source file in your project must contain:
+//
 // ```cpp
 // #define IMPLEMENT_SVG_THEME
-// #include "svg_theme.hpp"
+// #include "svg_theme.hpp" // this file
+// #include "svt_rack.hpp" // VCV-Rack helpers
 // ```
 
 #ifndef SVG_THEME_H
@@ -231,6 +214,49 @@ private:
 
 };
 
+// Widgets that support theming should implement IApplyTheme.
+//
+// IApplyTheme is what enables the VCV Rack helper ApplyChildrenTheme to update 
+// all your UI to a new theme in one line of code.
+//
+// The modified flag returned by themes.applyTheme(theme, ...) should be 
+// propagated back to the caller, so it can can initiate the appropriate
+// Dirty event as needed.
+//
+// Here's the complete example implementation of a themable SVG screw (not 
+// including the svg and the theme). 
+// See the Demo to see all the bits and pieces come together.
+//
+// ```cpp
+// struct ThemeScrew : app::SvgScrew, svg_theme::IApplyTheme {
+//     ThemeScrew() {
+//         setSvg(Svg::load(asset::plugin(pluginInstance, "res/Screw.svg")));
+//     }
+//     // implement IApplyTheme
+//     bool applyTheme(svg_theme::SvgThemes& themes, std::shared_ptr<svg_theme::Theme> theme) override
+//     {
+//         return themes.applyTheme(theme, sw->svg->handle);
+//     }
+// };
+// ```
+//
+struct IApplyTheme
+{
+    virtual bool applyTheme(svg_theme::SvgThemes& themes, std::shared_ptr<svg_theme::Theme> theme) = 0;
+};
+
+// Implement IThemeHolder to enable the AppendThemeMenu helper from the
+// VCV Rack helpers in `svt_rack.h`.
+// This is usually most conveniently implemented by your module widget,
+// as it is in the Demo.
+struct IThemeHolder
+{
+    virtual std::string getTheme() = 0;
+    virtual void setTheme(std::string theme_name) = 0;
+};
+
+// ============================================================================
+
 #ifdef IMPLEMENT_SVG_THEME
 
 const char * SeverityName(Severity sev) {
@@ -269,9 +295,6 @@ inline PackedColor PackRGB(unsigned int r, unsigned int g, unsigned int b) {
 }
 inline PackedColor PackRGBA(unsigned int r, unsigned int g, unsigned int b, unsigned int a) {
     return r | (g << 8) | (b << 16) | (a << 24);
-}
-inline PackedColor SetAlpha(unsigned int rgb, unsigned int a) {
-    return (rgb & 0x00FFFFFF) | a << 24;
 }
 
 bool isValidHexColor(std::string hex) {
@@ -692,7 +715,6 @@ bool SvgThemes::applyPaint(std::string tag, NSVGpaint & target, Paint& source)
             if (target.type != NSVG_PAINT_NONE) {
                 if ((target.type == NSVG_PAINT_RADIAL_GRADIENT)
                     || (target.type == NSVG_PAINT_LINEAR_GRADIENT)) {
-                    // changing type away from gradient will cause a memory leak
                     logWarning(ErrorCode::RemovingGradientNotSupported, 
                         format_string("'%s': Removing gradient not supported (leaks memory)", tag.c_str()));
                     return false;
@@ -707,7 +729,6 @@ bool SvgThemes::applyPaint(std::string tag, NSVGpaint & target, Paint& source)
                 if ((target.type != NSVG_PAINT_COLOR) || (target.color != source_color)) {
                     if ((target.type == NSVG_PAINT_RADIAL_GRADIENT)
                         || (target.type == NSVG_PAINT_LINEAR_GRADIENT)) {
-                        // changing type away from gradient will cause a memory leak
                         logWarning(ErrorCode::RemovingGradientNotSupported, 
                              format_string("'%s': Removing gradient not supported (leaks memory)", tag.c_str()));
                         return false;
@@ -725,7 +746,8 @@ bool SvgThemes::applyPaint(std::string tag, NSVGpaint & target, Paint& source)
 
                 if (!((target.type == NSVG_PAINT_RADIAL_GRADIENT)
                     || (target.type == NSVG_PAINT_LINEAR_GRADIENT))) {
-                    logWarning(ErrorCode::GradientNotPresent, format_string("'%s': Skipping SVG element without a gradient. No gradient to modify.", tag.c_str()));
+                    logWarning(ErrorCode::GradientNotPresent, 
+                        format_string("'%s': Skipping SVG element without a gradient", tag.c_str()));
                     return false;
                 }
 
@@ -733,7 +755,8 @@ bool SvgThemes::applyPaint(std::string tag, NSVGpaint & target, Paint& source)
                 for (auto n = 0; n < gradient->nstops; ++n) {
                     const GradientStop& stop = gradient->stops[n];
                     if (stop.index > target.gradient->nstops) {
-                        logWarning(ErrorCode::GradientStopNotPresent, format_string("'%s': Gradient stop %d not present in SVG - skipping", tag.c_str()));
+                        logWarning(ErrorCode::GradientStopNotPresent, 
+                            format_string("'%s': Gradient stop %d not present in SVG", tag.c_str()));
                     } else {
                         NSVGgradientStop& target_stop = target.gradient->stops[stop.index];
                         if (target_stop.offset != stop.offset) {
@@ -798,3 +821,29 @@ bool SvgThemes::applyTheme(std::shared_ptr<Theme> theme, NSVGimage* svg)
 } // namespace svg_theme
 #endif //SVG_THEME_H
 
+/* Copyright (C) 2023 Paul Chase Dempsey pcdempsey@live.com
+ *
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
+ *
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
+ *
+ * 1. The origin of this software must not be misrepresented; you must not
+ * claim that you wrote the original software. If you use this software
+ * in a product, an acknowledgment in the product documentation would be
+ * appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ * misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
+ *
+ * This software depends on and extends nanosvg.
+ * nanosvg, Copyright (c) 2013-14 Mikko Mononen memon@inside.org
+ * See nanosvg.h for license information.
+ * 
+ * This software depends on Jansson for JSON deserialization
+ * Jansson, Copyright (c) 2009-2016 Petri Lehtinen <petri@digip.org> licensed under the MIT license.
+ *
+ */

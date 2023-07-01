@@ -30,4 +30,12 @@ This software depends on the following:
 
 * Jansson, Copyright (c) 2009-2016 Petri Lehtinen <petri@digip.org> licensed under the MIT license.
   
+The graphics for Screw (and possibly other widgets to come) are derived from the 
+**Component Library graphics** for Rack, copyright © 2016-2023 [VCV](https://vcvrack.com/) 
+and licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+
+All other graphics are Copyright (c) 2023 Paul Chase Dempsey.
+While the overall license for this project is MIT, if you borrow fromt this project, 
+you should acknowledge your use in your product source and documentation.
+It's just the right thing to do.
 

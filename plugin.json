@@ -16,7 +16,7 @@
     {
       "slug": "svg-theme-demo",
       "name": "Demo",
-      "description": "Demo module using SVG theming",
+      "description": "Demo module for svg_them: SVG theming",
       "tags": [ "Blank" ]
     }
   ]
