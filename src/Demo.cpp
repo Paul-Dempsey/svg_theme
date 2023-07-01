@@ -6,21 +6,21 @@
 
 using namespace rack;
 
+// Demo Blank module (no processing) demonstrating themeing using svg_theme.
 struct DemoModule : Module
 {
     std::string theme;
     svg_theme::SvgThemes themes;
 
     DemoModule() {
-        // For demo purposes, log to the Rack log.
+        // For demo and authoring purposes, we log to the Rack log.
         //
         // In a production VCV Rack module in the library, logging to Rack's log is disallowed.
         // The logging is necessary only when authoring your theme and SVG.
         // Once your theme is correctly applying to the SVG, you do not need this logging
         // because it's useless to anyone other than someone modifying the SVG or theme.
         //
-        themes.setLog([](svg_theme::Severity severity, svg_theme::ErrorCode code, std::string info)->void
-        {
+        themes.setLog([](svg_theme::Severity severity, svg_theme::ErrorCode code, std::string info)->void {
             DEBUG("Theme %s (%d): %s", SeverityName(severity), code, info.c_str());
         });
     }
@@ -38,15 +38,16 @@ struct DemoModule : Module
             ? true
             : themes.load(asset::plugin(pluginInstance, "res/Demo-themes.json"));
     }
+
     svg_theme::SvgThemes& getThemes() { return themes; }
 
+    // Standard Rack persistence so that the selected theme is remembered with the patch.
     void dataFromJson(json_t* root) override {
         json_t* j = json_object_get(root, "theme");
         if (j) {
             theme = json_string_value(j);
         }
     }
-
     json_t* dataToJson() override {
         json_t* root = json_object();
         json_object_set_new(root, "theme", json_stringn(theme.c_str(), theme.size()));
@@ -58,7 +59,7 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
 {
     DemoModule* my_module = nullptr;
 
-    DemoModuleWidget(DemoModule *module)
+    DemoModuleWidget(DemoModule* module)
     {
         my_module = module;
         setModule(module);
@@ -66,13 +67,15 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
 
         // Rack's widgets cannot be themed because the Rack widget SVGs do not
         // contain the element ids required for targeting.
-        // Here we've copied the Rack screws, added ids, and created our own screw subclas. 
+        // Here we've copied the Rack screws, added ids, and created our own screw subclass. 
+        // See `widgets.hpp` for the definition of a ThemeScrew.
         addChild(createWidget<ThemeScrew>(Vec(RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ThemeScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ThemeScrew>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         addChild(createWidget<ThemeScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         if (my_module && !isDefaultTheme()) {
+            // only initialize themes when we're not the default theme
             if (my_module->initThemes()) {
                 setTheme(my_module->getTheme());
             }
@@ -84,7 +87,6 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
         auto theme = my_module->getTheme();
         return theme.empty() || 0 == theme.compare("Light");
     }
-
 
     // IThemeHolder
     std::string getTheme() override
@@ -127,7 +129,7 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
         if (!my_module) return;
         if (!my_module->initThemes()) return;
         auto themes = my_module->getThemes();
-        if (!themes.isLoaded()) return; // can't load themes, so no menu to display
+        if (!themes.isLoaded()) return; // Can't load themes, so no menu to display
 
         // Good practice to separate your module's menus from the Rack menus
         menu->addChild(new MenuSeparator); 

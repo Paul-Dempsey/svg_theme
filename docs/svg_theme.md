@@ -193,3 +193,19 @@ This is necessary so that user can get back to the Light theme after changing it
 
 - To prevent leftovers from one theme appearing when another is chosen, each theme must provide all the same styles, setting the same attributes (but with different values).
 At this time, the theme engine does not provide a way to verify that themese are parallel, so care must be taken.
+
+## Using the API
+
+The best way to understand the API and see how it works in action is to read the headers (they're well commented),
+and to read, build, and run the Demo (also thoroughly commented).
+
+| File | Description |
+|--|--|
+| [`svgtheme.hpp`](../svgtheme.hpp) | The main implementation of SVG theming. |
+| [`svt_rack.hpp`](../svt_rack.hpp) | VCV-Rack-specific helpers for the theme of the widget tree, and appending a Theme menu to your context menu. |
+| [`src/Demo.cpp](../src/Demo.cpp) | Demo VCV Rack module |
+| [`src/widgets.hpp`](../src/widgets.hpp) | Themeable widgets implementing IApplyTheme. As of this writing, only a themed Screw widget that looks exactly like the standard Rack Silver and Black screws. |
+| [`src/svg_theme_impl.cpp`](../src/svg_theme_impl.cpp) | cpp file where the theming code implementation lives. |
+| [`res/Demo.svg`](../res/Demo.svg) | Panel SVG for the Demo module. |
+| [`res/Screw.svg`](../res/Screw.svg) | SVG for ThemeScrew. |
+| [`res/Demo-themes.json`](../res/Demo-themes.json) | Theme definition JSON for the Demo project. |
