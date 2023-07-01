@@ -8,17 +8,18 @@ One and only one source file of your plugin must contain:
 
 ```cpp
 #define IMPLEMENT_SVG_THEME
-#include "svg_theme.hpp"
+#include "svgtheme.hpp"    // SVG theming for nanosvg
+#include "svt_rack.hpp" // VCV Rack-specific helpers
 ```
 
-In the Demo module, you can find the example of this in`src/svg_theme_impl.cpp` (path adjusted for where the header file exists)..
+In the Demo module, you can find the example of this in [`src/svg_theme_impl.cpp`](../src/svg_theme_impl.cpp) (with path adjusted for whereever the header file exists for you)..
 
 You define your themes in a json file included with your plugin's resources.
 You can have as many themes as you like.
 A theme is a collection of styles, similar to a very simplified CSS.
 Styles can address a limited number of attributes to reflect the theme.
 
-The styles can be applied to any `NSVGimage`, including the ones that underly Rack's `Svg` class.
+The styles can be applied to any `NSVGimage*`, including the ones that underly Rack's `Svg` class, used by it's SVG-based UI widgets.
 
 ## SVG element ids and style tags
 
