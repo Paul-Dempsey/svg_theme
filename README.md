@@ -10,7 +10,8 @@ One (and only one) source file in your project must contain:
 
 ```cpp
 #define IMPLEMENT_SVG_THEME
-#include "svg_theme.hpp"
+#include "svg_theme.hpp" // SVG themeing
+#include "svt_rack.hpp" // VCV Rack-specific SVG theming helpers
 ```
 
 In this project, it's done in it's own .cpp file, but that is not required.
