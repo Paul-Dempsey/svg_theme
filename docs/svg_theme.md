@@ -42,7 +42,7 @@ You can edit an object's id in Inkscape: Right click and choose **Object Propert
 Nano restricts ids to 63 characters.
 
 > Note: Unfortunately, the current Rack SVGs in the component library do not contain ids, so they cannot be themed.
-If you want to target Rack-style SVG widgets, you must subclass the Rack widget and supply your own SVG(s(.)
+If you want to target Rack-style SVG widgets, you must subclass the Rack widget and supply your own SVG(s).
 
 ## svg_theme JSON format
 
