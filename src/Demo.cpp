@@ -9,7 +9,9 @@ using namespace rack;
 // Demo Blank module (no processing) demonstrating themeing using svg_theme.
 struct DemoModule : Module
 {
+    // This is the name of the selected theme, to save in json
     std::string theme;
+    // The svg_theme engine
     svg_theme::SvgThemes themes;
 
     DemoModule() {
@@ -25,9 +27,12 @@ struct DemoModule : Module
         });
     }
 
-    // getters and setters
+    // get and set the theme to be persisted
     void setTheme(std::string theme) { this->theme = theme; }
     std::string getTheme() { return theme; }
+
+    // access tot he themes engine for the ModuleWidget
+    svg_theme::SvgThemes& getThemes() { return themes; }
 
     // initThemes must be called to load themes.
     // It can be safely called multiple times and it only loads the first time.
@@ -39,7 +44,6 @@ struct DemoModule : Module
             : themes.load(asset::plugin(pluginInstance, "res/Demo-themes.json"));
     }
 
-    svg_theme::SvgThemes& getThemes() { return themes; }
 
     // Standard Rack persistence so that the selected theme is remembered with the patch.
     void dataFromJson(json_t* root) override {
@@ -67,7 +71,7 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
 
         // Rack's widgets cannot be themed because the Rack widget SVGs do not
         // contain the element ids required for targeting.
-        // Here we've copied the Rack screws, added ids, and created our own screw subclass. 
+        // Here we've copied the Rack screws, added ids, and created our own screw subclass: "ThemeScrew".
         // See `widgets.hpp` for the definition of a ThemeScrew.
         addChild(createWidget<ThemeScrew>(Vec(RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ThemeScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
@@ -75,26 +79,28 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
         addChild(createWidget<ThemeScrew>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 
         if (my_module && !isDefaultTheme()) {
-            // only initialize themes when we're not the default theme
+            // only initialize themes and modify the svg when the current hteme is not the default theme
             if (my_module->initThemes()) {
                 setTheme(my_module->getTheme());
             }
         }
    }
 
+    // true when the default theme is the current theme
     bool isDefaultTheme() {
         if (!my_module) return true;
         auto theme = my_module->getTheme();
         return theme.empty() || 0 == theme.compare("Light");
     }
 
-    // IThemeHolder
+    // IThemeHolder used by the menu helper
     std::string getTheme() override
     {
         return isDefaultTheme() ? "Light" : my_module->getTheme(); 
     }
 
-    // IThemeHolder
+    // IThemeHolder used by the menu helper, and also whenever 
+    // we want to apply a new theme
     void setTheme(std::string theme) override
     {
         if (!my_module) return;
@@ -106,8 +112,9 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
         auto svg_theme = themes.getTheme(theme);
 
         // For demo purposes, we are using a stock Rack SVGPanel
-        // which does not implement IApplyTheme.
-        // This shows how to apply themeing without IApplyTheme.
+        // which does not implement IApplyTheme.so here we do it manually.
+        // This shows how to apply themeing without implementing IApplyTheme
+        // and using ApplyChildrenTheme.
         if (themes.applyTheme(svg_theme, panel->svg->handle)) {
             // The SVG was changed, so we need to tell the widget to redraw
             EventContext ctx;
