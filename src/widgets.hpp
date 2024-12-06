@@ -19,6 +19,6 @@ struct ThemeScrew : app::SvgScrew, svg_theme::IApplyTheme
     // implement IApplyTheme
     bool applyTheme(svg_theme::SvgThemes& themes, std::shared_ptr<svg_theme::Theme> theme) override
     {
-        return themes.applyTheme(theme, sw->svg->handle);
+        return themes.applyTheme(theme, asset::plugin(pluginInstance, "res/Screw.svg"), sw->svg);
     }
 };
