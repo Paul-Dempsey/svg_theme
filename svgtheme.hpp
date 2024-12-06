@@ -165,6 +165,7 @@ public:
     std::shared_ptr<Theme> getTheme(const std::string& name);
 
     // Apply the theme to an NSVGImage*
+    // This uses Rack's builtin SVG cache, indexed by SVG filename. Multiple instances using the same SVG file will have the theme applied (but not display it until they have some other reason to redraw).
     // return true if the SVG was modified. 
     // You must send a Dirty event to any widget where applyTheme to any of its component SVGs returns true.
     bool applyTheme(std::shared_ptr<Theme> theme, NSVGimage* svg);
