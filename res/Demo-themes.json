@@ -8,24 +8,24 @@
             "screw-rim": {
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#ABA9A9" },
-                        { "index": 1, "color": "#8F8F8F" }
+                        { "index": 0, "color": "#ABA9A9", "offset": 0 },
+                        { "index": 1, "color": "#8F8F8F", "offset": 1 }
                     ]
                 }
             },
             "screw-bevel": {
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#F5F5F5" },
-                        { "index": 1, "color": "#C2C2C2" }
+                        { "index": 0, "color": "#F5F5F5", "offset": 0 },
+                        { "index": 1, "color": "#C2C2C2", "offset": 1 }
                     ]
                 }
             },
             "screw-face":{
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#EBEBEB" },
-                        { "index": 1, "color": "#CCCCCC" }
+                        { "index": 0, "color": "#EBEBEB", "offset": 0 },
+                        { "index": 1, "color": "#CCCCCC", "offset": 1 }
                     ]
                 }
             },
@@ -51,8 +51,8 @@
             "fill-rad": { 
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#4e8dbf00" },
-                        { "index": 1, "color": "#4e8dbfff" }
+                        { "index": 0, "color": "#4e8dbf00", "offset": 0 },
+                        { "index": 1, "color": "#4e8dbfff", "offset": 1 }
                     ]
                 }
             },
@@ -72,24 +72,24 @@
             "screw-rim": {
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#303030" },
-                        { "index": 1, "color": "#222222" }
+                        { "index": 0, "color": "#303030", "offset": 0 },
+                        { "index": 1, "color": "#222222", "offset": 1 }
                     ]
                 }
             },
             "screw-bevel": {
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#636363" },
-                        { "index": 1, "color": "#2B2B2B" }
+                        { "index": 0, "color": "#636363", "offset": 0 },
+                        { "index": 1, "color": "#2B2B2B", "offset": 1 }
                     ]
                 }
             },
             "screw-face":{
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#4C4C4C" },
-                        { "index": 1, "color": "#3B3B3B" }
+                        { "index": 0, "color": "#4C4C4C", "offset": 0 },
+                        { "index": 1, "color": "#3B3B3B", "offset": 1 }
                     ]
                 }
             },
@@ -115,8 +115,8 @@
             "fill-rad": { 
                 "fill": {
                     "gradient": [
-                        { "index": 0, "color": "#952a9cff" },
-                        { "index": 1, "color": "#952a9c00" }
+                        { "index": 0, "color": "#952a9cff", "offset": 0 },
+                        { "index": 1, "color": "#952a9c00", "offset": 1 }
                     ]
                 }
             },
