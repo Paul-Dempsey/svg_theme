@@ -26,6 +26,7 @@
 #include <vector>
 #include <nanosvg.h>
 #include <jansson.h>
+#include <rack.hpp>
 
 namespace svg_theme {
 
@@ -133,6 +134,7 @@ struct Style {
 
 struct Theme {
     std::string name;
+    std::string file;
     std::unordered_map<std::string, std::shared_ptr<Style>> styles;
 
     std::shared_ptr<Style> getStyle(std::string name) {
@@ -163,9 +165,15 @@ public:
     std::shared_ptr<Theme> getTheme(const std::string& name);
 
     // Apply the theme to an NSVGImage*
+    // This uses Rack's builtin SVG cache, indexed by SVG filename. Multiple instances using the same SVG file will have the theme applied (but not display it until they have some other reason to redraw).
     // return true if the SVG was modified. 
-    // You must send a Dirty event to any widget where applyTheme to any of it's component SVGs returns true.
+    // You must send a Dirty event to any widget where applyTheme to any of its component SVGs returns true.
     bool applyTheme(std::shared_ptr<Theme> theme, NSVGimage* svg);
+    // Apply the theme to an SVG
+    // This uses an alternative SVG cache, indexed by SVG filename and theme, allowing multiple instances of the same module to be independent.
+    // return true if the SVG was modified.
+    // Use the SVG as is required for your situation.
+    bool applyTheme(std::shared_ptr<Theme> theme, std::string svgFile, std::shared_ptr<rack::window::Svg>& svg);
 
     // Get a list of themes defined in the style sheet
     std::vector<std::string> getThemeNames()
@@ -671,6 +679,7 @@ bool SvgThemes::load(const std::string& filename)
                         logInfo(format_string("Parsing theme '%s'", name));
                         auto theme = std::make_shared<Theme>();
                         theme->name = name;
+                        theme->file = filename;
                         if (parseTheme(j, theme)) {
                             themes.push_back(theme);
                         } else {
@@ -815,6 +824,53 @@ bool SvgThemes::applyTheme(std::shared_ptr<Theme> theme, NSVGimage* svg)
         }
     }
     return modified;
+}
+
+static std::map<std::tuple<std::string, std::string, std::string>, std::shared_ptr<rack::window::Svg>> svgCacheByTheme;
+
+struct SvgByTheme : rack::window::Svg {
+
+	static std::shared_ptr<rack::window::Svg> load(const std::string& filename, std::shared_ptr<Theme> theme, std::shared_ptr<rack::window::Svg> oldSvg) {
+		const auto& pair = svgCacheByTheme.find(std::tuple<std::string, std::string, std::string>(filename, theme->file, theme->name));
+		if (pair != svgCacheByTheme.end()) {
+			return pair->second;
+		}
+
+		std::shared_ptr<rack::window::Svg> newSvg;
+		try {
+			newSvg = std::make_shared<rack::window::Svg>();
+			newSvg->loadFile(filename);
+		}
+		catch (rack::Exception& e) {
+			WARN("%s", e.what());
+			newSvg = nullptr;
+		}
+		if (newSvg) {
+			svgCacheByTheme[std::tuple<std::string, std::string, std::string>(filename, theme->file, theme->name)] = newSvg;
+            // The caller is responsible for applying the theme
+		}
+		return newSvg;
+	}
+
+	static size_t cacheSize() {return svgCacheByTheme.size();}
+
+	static void showCache() {
+		unsigned int n = 0;
+		for (auto entry : svgCacheByTheme) {
+			DEBUG("%u %s %s %s %p", ++n, std::get<0>(entry.first).c_str(), std::get<1>(entry.first).c_str(), std::get<2>(entry.first).c_str(), (entry.second).get());
+		}
+	}
+};
+
+bool SvgThemes::applyTheme(std::shared_ptr<Theme> theme, std::string filename, std::shared_ptr<rack::window::Svg>& svg) {
+	//check the themed cache for existing relevant svg
+	std::shared_ptr<rack::window::Svg> newSvg = SvgByTheme::load(filename, theme, svg);
+	if (newSvg && (newSvg != svg)) {
+		applyTheme(theme, newSvg->handle);
+		svg = newSvg;
+		return true;
+	}
+	return false;
 }
 
 #endif // IMPLEMENT_SVG_THEME

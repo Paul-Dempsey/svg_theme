@@ -62,12 +62,14 @@ struct DemoModule : Module
 struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
 {
     DemoModule* my_module = nullptr;
+    std::string panelFilename;
 
     DemoModuleWidget(DemoModule* module)
     {
         my_module = module;
         setModule(module);
-		setPanel(createPanel(asset::plugin(pluginInstance, "res/Demo.svg")));
+        panelFilename = asset::plugin(pluginInstance, "res/Demo.svg");
+		setPanel(createPanel(panelFilename));
 
         // Rack's widgets cannot be themed because the Rack widget SVGs do not
         // contain the element ids required for targeting.
@@ -115,7 +117,9 @@ struct  DemoModuleWidget : ModuleWidget, svg_theme::IThemeHolder
         // which does not implement IApplyTheme.so here we do it manually.
         // This shows how to apply themeing without implementing IApplyTheme
         // and using ApplyChildrenTheme.
-        if (themes.applyTheme(svg_theme, panel->svg->handle)) {
+        std::shared_ptr<Svg> newSvg = panel->svg;
+        if (themes.applyTheme(svg_theme, panelFilename, newSvg)) {
+			panel->setBackground(newSvg);
             // The SVG was changed, so we need to tell the widget to redraw
             EventContext ctx;
             DirtyEvent dirt;
