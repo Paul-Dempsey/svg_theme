@@ -1,7 +1,7 @@
 {
   "slug": "svg-theme",
   "name": "svg_theme Demo",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "license": "MIT",
   "brand": "pachde",
   "author": "pachde",
@@ -16,8 +16,14 @@
     {
       "slug": "svg-theme-demo",
       "name": "Demo",
-      "description": "Demo module for svg_them: SVG theming",
-      "tags": [ "Blank" ]
+      "description": "Demo module for svg_theme: SVG theming",
+      "tags": [ "Blank", "Visual" ]
+    },
+    {
+      "slug": "svg-theme-clip",
+      "name": "Clip",
+      "description": "Working demo module with widgets for svg_theme: SVG theming",
+      "tags": [ "Utility", "Visual" ]
     }
   ]
 }

@@ -58,7 +58,7 @@ enum ErrorCode {
     GradientNotPresent           = 18,
 };
 
-// logging callback function you provide.
+// optional logging callback function you provide.
 typedef std::function<void(Severity severity, ErrorCode code, std::string info)> LogCallback;
 
 struct GradientStop {
@@ -132,7 +132,7 @@ struct Style {
     bool isApplyStrokeWidth() { return apply_stroke_width; }
 };
 
-struct Theme {
+struct SvgTheme {
     std::string name;
     std::string file;
     std::unordered_map<std::string, std::shared_ptr<Style>> styles;
@@ -147,7 +147,7 @@ struct Theme {
 };
 
 
-class SvgThemes
+class SvgThemeEngine
 {
 public:
 
@@ -162,18 +162,21 @@ public:
     bool isLoaded() { return !themes.empty(); }
 
     // Get a theme by name
-    std::shared_ptr<Theme> getTheme(const std::string& name);
+    std::shared_ptr<SvgTheme> getTheme(const std::string& name);
 
-    // Apply the theme to an NSVGImage*
-    // This uses Rack's builtin SVG cache, indexed by SVG filename. Multiple instances using the same SVG file will have the theme applied (but not display it until they have some other reason to redraw).
-    // return true if the SVG was modified. 
-    // You must send a Dirty event to any widget where applyTheme to any of its component SVGs returns true.
-    bool applyTheme(std::shared_ptr<Theme> theme, NSVGimage* svg);
-    // Apply the theme to an SVG
-    // This uses an alternative SVG cache, indexed by SVG filename and theme, allowing multiple instances of the same module to be independent.
-    // return true if the SVG was modified.
-    // Use the SVG as is required for your situation.
-    bool applyTheme(std::shared_ptr<Theme> theme, std::string svgFile, std::shared_ptr<rack::window::Svg>& svg);
+    // load a themed Svg and cache it
+    std::shared_ptr<::rack::window::Svg> loadSvg(const std::string& filename, const std::shared_ptr<SvgTheme> theme);
+
+    // Loads an SVG file and applies the theme. If a cached version is available, it is returned directly.
+    // This uses an alternative SVG cache, keyed by SVG filename and theme.
+    // Returns true if the SVG was newly loaded.
+    bool applyTheme(std::shared_ptr<SvgTheme> theme, std::string svgFile, std::shared_ptr<rack::window::Svg>& svg);
+
+    // Apply the theme to an NSVGImage
+    // Most client code should not call this directly, to avoid contaminating a cached SVG 
+    // (either the themed cache, or the global Rack cache).
+    // Returns true if the SVG was modified.
+    bool applyTheme(std::shared_ptr<SvgTheme> theme, NSVGimage* svg);
 
     // Get a list of themes defined in the style sheet
     std::vector<std::string> getThemeNames()
@@ -185,11 +188,14 @@ public:
         return result;
     }
 
+    void showCache();
+
 private:
 
     static void LogNothing(Severity severity, ErrorCode code, std::string info) {}
 
-    std::vector<std::shared_ptr<Theme>> themes;
+    std::vector<std::shared_ptr<SvgTheme>> themes;
+    std::map<std::string, std::shared_ptr<::rack::window::Svg>> svgs;
     LogCallback log = LogNothing;
 
     void logInfo(std::string info) {
@@ -212,8 +218,8 @@ private:
     bool parseFill(json_t* root, std::shared_ptr<Style>);
     bool parseStroke(json_t* root, std::shared_ptr<Style>);
     bool parseOpacity(json_t* root, std::shared_ptr<Style>);
-    bool parseStyle(const char * name, json_t* root, std::shared_ptr<Theme> theme);
-    bool parseTheme(json_t* root, std::shared_ptr<Theme> theme);
+    bool parseStyle(const char * name, json_t* root, std::shared_ptr<SvgTheme> theme);
+    bool parseTheme(json_t* root, std::shared_ptr<SvgTheme> theme);
     bool parseGradient(json_t* root, Gradient& gradient);
 
     bool applyPaint(std::string tag, NSVGpaint & target, Paint& source);
@@ -227,7 +233,7 @@ private:
 // IApplyTheme is what enables the VCV Rack helper ApplyChildrenTheme to update 
 // all your UI to a new theme in one line of code.
 //
-// The modified flag returned by themes.applyTheme(theme, ...) should be 
+// The modified flag returned by theme_engine.applyTheme(theme, ...) should be 
 // propagated back to the caller, so it can can initiate the appropriate
 // Dirty event as needed.
 //
@@ -241,16 +247,16 @@ private:
 //         setSvg(Svg::load(asset::plugin(pluginInstance, "res/Screw.svg")));
 //     }
 //     // implement IApplyTheme
-//     bool applyTheme(svg_theme::SvgThemes& themes, std::shared_ptr<svg_theme::Theme> theme) override
+//     bool applyTheme(svg_theme::SvgThemeEngine& theme_engine, std::shared_ptr<svg_theme::SvgTheme> theme) override
 //     {
-//         return themes.applyTheme(theme, sw->svg->handle);
+//         return theme_engine.applyTheme(theme, sw->svg->handle);
 //     }
 // };
 // ```
 //
 struct IApplyTheme
 {
-    virtual bool applyTheme(svg_theme::SvgThemes& themes, std::shared_ptr<svg_theme::Theme> theme) = 0;
+    virtual bool applyTheme(svg_theme::SvgThemeEngine& theme_engine, std::shared_ptr<svg_theme::SvgTheme> theme) = 0;
 };
 
 // Implement IThemeHolder to enable the AppendThemeMenu helper from the
@@ -259,12 +265,12 @@ struct IApplyTheme
 // as it is in the Demo.
 struct IThemeHolder
 {
-    virtual std::string getTheme() = 0;
-    virtual void setTheme(std::string theme_name) = 0;
+    virtual std::string getThemeName() = 0;
+    virtual void setThemeName(std::string theme_name) = 0;
 };
 
-// ============================================================================
 
+// ============================================================================
 #ifdef IMPLEMENT_SVG_THEME
 
 const char * SeverityName(Severity sev) {
@@ -383,51 +389,51 @@ std::string format_string(const char *fmt, ...)
 
 const PackedColor OPAQUE_BLACK = 255 << 24;
 
-std::shared_ptr<Theme> SvgThemes::getTheme(const std::string& name)
+std::shared_ptr<SvgTheme> SvgThemeEngine::getTheme(const std::string& name)
 {
-    auto r = std::find_if(themes.begin(), themes.end(), [=](const std::shared_ptr<Theme> theme) {
+    auto r = std::find_if(themes.begin(), themes.end(), [=](const std::shared_ptr<SvgTheme> theme) {
         return 0 == theme->name.compare(name);
     });
     return r == themes.end() ? nullptr : *r;
 }
 
-bool SvgThemes::requireValidHexColor(std::string hex, const char * name)
+bool SvgThemeEngine::requireValidHexColor(std::string hex, const char * name)
 {
     if (isValidHexColor(hex)) return true;
     logError(ErrorCode::InvalidHexColor, format_string("'%s': invalid hex color: '%s'", name, hex.c_str()));
     return false;
 }
-bool SvgThemes::requireArray(json_t* j, const char * name)
+bool SvgThemeEngine::requireArray(json_t* j, const char * name)
 {
     if (json_is_array(j)) return true;
     logError(ErrorCode::ArrayExpected, format_string("'%s': array expected", name));
     return false;
 }
-bool SvgThemes::requireObject(json_t* j, const char * name)
+bool SvgThemeEngine::requireObject(json_t* j, const char * name)
 {
     if (json_is_object(j)) return true;
     logError(ErrorCode::ObjectExpected, format_string("'%s': object expected", name));
     return false;
 }
-bool SvgThemes::requireObjectOrString(json_t* j, const char * name)
+bool SvgThemeEngine::requireObjectOrString(json_t* j, const char * name)
 {
     if (json_is_object(j) || json_is_string(j)) return true;
     logError(ErrorCode::ObjectOrStringExpected, format_string("'%s': Object or string expected", name));
     return false;
 }
-bool SvgThemes::requireString(json_t* j, const char * name)
+bool SvgThemeEngine::requireString(json_t* j, const char * name)
 {
     if (json_is_string(j)) return true;
     logError(ErrorCode::StringExpected, format_string("'%s': String expected", name));
     return false;
 }
-bool SvgThemes::requireNumber(json_t* j, const char * name)
+bool SvgThemeEngine::requireNumber(json_t* j, const char * name)
 {
     if (json_is_number(j)) return true;
     logError(ErrorCode::NumberExpected, format_string("'%s': Number expected", name));
     return false;
 }
-bool SvgThemes::requireInteger(json_t* j, const char * name)
+bool SvgThemeEngine::requireInteger(json_t* j, const char * name)
 {
     if (json_is_integer(j)) return true;
     logError(ErrorCode::IntegerExpected, format_string("'%s': Integer expected", name));
@@ -455,7 +461,7 @@ float getNumber(json_t * j)
     return 1.f;
 }
 
-bool SvgThemes::parseOpacity(json_t * root, std::shared_ptr<Style> style)
+bool SvgThemeEngine::parseOpacity(json_t * root, std::shared_ptr<Style> style)
 {
     auto oopacity = json_object_get(root, "opacity");
     if (oopacity) {
@@ -465,18 +471,19 @@ bool SvgThemes::parseOpacity(json_t * root, std::shared_ptr<Style> style)
     return true;
 }
 
-bool SvgThemes::parseGradient(json_t* ogradient, Gradient& gradient)
+bool SvgThemeEngine::parseGradient(json_t* ogradient, Gradient& gradient)
 {
     bool ok = true;
     gradient.nstops = 0;
     if (ogradient) {
         if (!requireArray(ogradient, "gradient")) return false;
 
-        int index;
-        PackedColor color;
-        float offset;
+        int index = 0;
+        PackedColor color = OPAQUE_BLACK;
+        float offset = 0.f;
 
-        json_t * item; size_t n;
+        json_t * item;
+        size_t n;
         json_array_foreach(ogradient, n, item) {
             if (n > 1) {
                 logError(ErrorCode::TwoGradientStopsMax, "A maximum of two gradient stops is allowed");
@@ -536,7 +543,7 @@ bool SvgThemes::parseGradient(json_t* ogradient, Gradient& gradient)
     return ok;
 }
 
-bool SvgThemes::parseFill(json_t* root, std::shared_ptr<Style> style)
+bool SvgThemeEngine::parseFill(json_t* root, std::shared_ptr<Style> style)
 {
     auto ofill = json_object_get(root, "fill");
     if (!ofill) return true;
@@ -572,7 +579,7 @@ bool SvgThemes::parseFill(json_t* root, std::shared_ptr<Style> style)
     return true;
 }
 
-bool SvgThemes::parseStroke(json_t* root, std::shared_ptr<Style> style)
+bool SvgThemeEngine::parseStroke(json_t* root, std::shared_ptr<Style> style)
 {
     auto ostroke = json_object_get(root, "stroke");
     if (ostroke) {
@@ -617,7 +624,7 @@ bool SvgThemes::parseStroke(json_t* root, std::shared_ptr<Style> style)
     return true;
 }
 
-bool SvgThemes::parseStyle(const char * name, json_t* root, std::shared_ptr<Theme> theme)
+bool SvgThemeEngine::parseStyle(const char * name, json_t* root, std::shared_ptr<SvgTheme> theme)
 {
     logInfo(format_string("Parsing '%s'", name));
     auto style = std::make_shared<Style>();
@@ -628,7 +635,7 @@ bool SvgThemes::parseStyle(const char * name, json_t* root, std::shared_ptr<Them
     return true;
 }
 
-bool SvgThemes::parseTheme(json_t* root, std::shared_ptr<Theme> theme)
+bool SvgThemeEngine::parseTheme(json_t* root, std::shared_ptr<SvgTheme> theme)
 {
     void * n = nullptr;
     const char* key = nullptr;
@@ -645,7 +652,7 @@ bool SvgThemes::parseTheme(json_t* root, std::shared_ptr<Theme> theme)
     return true;
 }
 
-bool SvgThemes::load(const std::string& filename)
+bool SvgThemeEngine::load(const std::string& filename)
 {
     bool ok = true;
 	FILE* file = std::fopen(filename.c_str(), "r");
@@ -677,7 +684,7 @@ bool SvgThemes::load(const std::string& filename)
                     j = json_object_get(item, "theme");
                     if (j && json_is_object(j)) {
                         logInfo(format_string("Parsing theme '%s'", name));
-                        auto theme = std::make_shared<Theme>();
+                        auto theme = std::make_shared<SvgTheme>();
                         theme->name = name;
                         theme->file = filename;
                         if (parseTheme(j, theme)) {
@@ -715,7 +722,7 @@ bool SvgThemes::load(const std::string& filename)
     return ok;
 }
 
-bool SvgThemes::applyPaint(std::string tag, NSVGpaint & target, Paint& source)
+bool SvgThemeEngine::applyPaint(std::string tag, NSVGpaint & target, Paint& source)
 {
     if (!source.isApplicable()) return false;
 
@@ -788,17 +795,17 @@ bool SvgThemes::applyPaint(std::string tag, NSVGpaint & target, Paint& source)
 }
 
 
-bool SvgThemes::applyFill(std::string tag, NSVGshape* shape, std::shared_ptr<Style> style)
+bool SvgThemeEngine::applyFill(std::string tag, NSVGshape* shape, std::shared_ptr<Style> style)
 {
     return style->isApplyFill() ? applyPaint(tag, shape->fill, style->fill) : false;
 }
 
-bool SvgThemes::applyStroke(std::string tag, NSVGshape* shape, std::shared_ptr<Style> style)
+bool SvgThemeEngine::applyStroke(std::string tag, NSVGshape* shape, std::shared_ptr<Style> style)
 {
     return style->isApplyStroke() ? applyPaint(tag, shape->stroke, style->stroke) : false;
 }
 
-bool SvgThemes::applyTheme(std::shared_ptr<Theme> theme, NSVGimage* svg)
+bool SvgThemeEngine::applyTheme(std::shared_ptr<SvgTheme> theme, NSVGimage* svg)
 {
     if (!theme || !svg || !svg->shapes) return false;
     bool modified = false;
@@ -826,51 +833,46 @@ bool SvgThemes::applyTheme(std::shared_ptr<Theme> theme, NSVGimage* svg)
     return modified;
 }
 
-static std::map<std::tuple<std::string, std::string, std::string>, std::shared_ptr<rack::window::Svg>> svgCacheByTheme;
+std::shared_ptr<::rack::window::Svg> SvgThemeEngine::loadSvg(const std::string& filename, const std::shared_ptr<SvgTheme> theme)
+{
+    auto key = filename;
+    key.append( ":" + theme->name); 
+	const auto& pair = svgs.find(key);
+	if (pair != svgs.end())
+		return pair->second;
 
-struct SvgByTheme : rack::window::Svg {
-
-	static std::shared_ptr<rack::window::Svg> load(const std::string& filename, std::shared_ptr<Theme> theme, std::shared_ptr<rack::window::Svg> oldSvg) {
-		const auto& pair = svgCacheByTheme.find(std::tuple<std::string, std::string, std::string>(filename, theme->file, theme->name));
-		if (pair != svgCacheByTheme.end()) {
-			return pair->second;
-		}
-
-		std::shared_ptr<rack::window::Svg> newSvg;
-		try {
-			newSvg = std::make_shared<rack::window::Svg>();
-			newSvg->loadFile(filename);
-		}
-		catch (rack::Exception& e) {
-			WARN("%s", e.what());
-			newSvg = nullptr;
-		}
-		if (newSvg) {
-			svgCacheByTheme[std::tuple<std::string, std::string, std::string>(filename, theme->file, theme->name)] = newSvg;
-            // The caller is responsible for applying the theme
-		}
-		return newSvg;
+	// Load svg
+	std::shared_ptr<::rack::window::Svg> svg;
+	try {
+		svg = std::make_shared<::rack::window::Svg>();
+		svg->loadFile(filename);
+        applyTheme(theme, svg->handle);
 	}
-
-	static size_t cacheSize() {return svgCacheByTheme.size();}
-
-	static void showCache() {
-		unsigned int n = 0;
-		for (auto entry : svgCacheByTheme) {
-			DEBUG("%u %s %s %s %p", ++n, std::get<0>(entry.first).c_str(), std::get<1>(entry.first).c_str(), std::get<2>(entry.first).c_str(), (entry.second).get());
-		}
+	catch (rack::Exception& e) {
+		WARN("%s", e.what());
+		svg = NULL;
 	}
-};
+	svgs[key] = svg;
+	return svg;
+}
 
-bool SvgThemes::applyTheme(std::shared_ptr<Theme> theme, std::string filename, std::shared_ptr<rack::window::Svg>& svg) {
-	//check the themed cache for existing relevant svg
-	std::shared_ptr<rack::window::Svg> newSvg = SvgByTheme::load(filename, theme, svg);
+
+bool SvgThemeEngine::applyTheme(std::shared_ptr<SvgTheme> theme, std::string filename, std::shared_ptr<rack::window::Svg>& svg) {
+	auto newSvg = this->loadSvg(filename, theme);
+ 
 	if (newSvg && (newSvg != svg)) {
-		applyTheme(theme, newSvg->handle);
 		svg = newSvg;
 		return true;
 	}
 	return false;
+}
+
+
+void SvgThemeEngine::showCache() {
+	unsigned int n = 0;
+	for (auto entry : svgs) {
+		DEBUG("%u %s %p", ++n, entry.first.c_str(), (entry.second).get());
+	}
 }
 
 #endif // IMPLEMENT_SVG_THEME

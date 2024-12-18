@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="12"
+   height="18"
+   viewBox="0 0 12 18"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient
+       id="gface"
+       x1="6" y1="0" x2="0" y2="16"
+       gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f5f5f5" />
+      <stop offset="1" stop-color="#808080" />
+    </linearGradient>
+  </defs>
+  <g>
+    <rect id="switch-frame" x="0" y="0" width="12" height="18" fill="#595959" />
+    <rect id="switch-face" x="1" y="1" width="10" height="16" fill="url(#gface)" />
+    <g>
+      <rect id="switch-thumb-face" x="0.5" y="0.5" width="11" height="7" fill="#a0a0a0" />
+      <path id="switch-thumb-top" 
+         fill="#e5e5e5"
+         d="M 0.5,0.5 H 11.5 V 2.25 c -2.2,-0.7 -8.8,-0.7 -11,0 z" />
+      <path id="switch-thumb-bottom" 
+         fill="#333333"
+         d="M 0.5,7.5 H 11.5 V 5.75 c -2.2,0.7 -8.8,0.7 -11,0 z" />
+    </g>
+  </g>
+</svg>

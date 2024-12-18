@@ -5,6 +5,67 @@
             "panel": {
                 "fill": "#e6e6e6"
             },
+            "label": {
+                "fill":"#303030"
+            },
+            "output-section" : {
+                "fill": "#c0c0c0"
+            },
+
+            "port-bezel" : {
+                "fill": "#595959"
+            },
+            "port-ring" : {
+                "fill": "#808080"
+            },
+            "port-jack" : {
+                "fill": "#c0c0c0"
+            },
+            "port-jack-edge" : {
+                "fill": {
+                    "gradient": [
+                        { "index":"0", "offset":"0", "color":"#e5e5e5"},
+                        { "index":"1", "offset":"1", "color":"#a6a6a6"}
+                    ]
+                }
+            },
+
+            "switch-frame" : {
+                "fill": "#595959"
+            },
+            "switch-face" : {
+                "fill": {
+                    "gradient": [
+                        { "index":"0", "offset":"0", "color":"#f5f5f5" },
+                        { "index":"1", "offset":"1", "color":"#808080" }
+                    ]
+                }
+            },
+            "switch-thumb-face" : {
+                "fill": "#a0a0a0"
+            },
+            "switch-thumb-top" : {
+                "fill": "#e5e5e5"
+            },
+            "switch-thumb-bottom" : {
+                "fill": "#333333"
+            },
+
+            "knob-bg" : {
+                "fill" : {
+                    "gradient" : [
+                        { "index": 0, "offset":0, "color":"#e5e5e5" },
+                        { "index": 1, "offset":1, "color":"#909090" }
+                    ]
+                }
+            },
+            "knob-ring" : {
+                "stroke": "#595959"
+            },
+            "knob-index" : {
+                "fill": "#404040"
+            },
+
             "screw-rim": {
                 "fill": {
                     "gradient": [
@@ -38,8 +99,7 @@
                 }
             },
             "logo-text": {
-                "fill": "#272727",
-                "stroke": "#d7b813"
+                "fill": "#303030"
             },
             "fill-lin": {
                 "fill": {
@@ -67,6 +127,69 @@
         "theme": {
             "panel": {
                 "fill": "#202b4a"
+            },
+            "label": {
+                "fill":"#e6e6e6"
+            },
+            "module-name" : {
+                "fill":"#e6e6e6"
+            },
+            "output-section" : {
+                "fill": "#e8971d"
+            },
+
+            "knob-bg" : {
+                "fill" : {
+                    "gradient" : [
+                        { "index":0, "offset":0, "color":"#808080" },
+                        { "index":1, "offset":1, "color":"#202020" }
+                    ]
+                }
+            },
+            "knob-ring" : {
+                "stroke": "#408004"
+            },
+            "knob-index" : {
+                "fill": "#e8971d"
+            },
+
+            "port-bezel" : {
+                "fill": "#101010"
+            },
+            "port-ring" : {
+                "fill": "#202b4a"
+            },
+            "port-jack" : {
+                "fill": "#606060"
+            },
+            "port-jack-edge" : {
+                "fill": {
+                    "gradient": [
+                        { "index":0, "offset":0, "color":"#b0b0b0" },
+                        { "index":1, "offset":1, "color":"#404040" }
+                    ]
+                }
+            },
+
+            "switch-frame" : {
+                "fill": "#808080"
+            },
+            "switch-face" : {
+                "fill": {
+                    "gradient": [
+                        { "index":0, "offset":0, "color":"#d0d0d0" },
+                        { "index":1, "offset":1, "color":"#202020" }
+                    ]
+                }
+            },
+            "switch-thumb-face" : {
+                "fill": "#606080"
+            },
+            "switch-thumb-top" : {
+                "fill": "#c0c0c0"
+            },
+            "switch-thumb-bottom" : {
+                "fill": "#282828"
             },
 
             "screw-rim": {
@@ -98,12 +221,11 @@
             "logo-circle": {
                 "stroke": {
                     "color": "#e0deb7",
-                    "width": 2
+                    "width": 3
                 }
             },
             "logo-text": {
-                "fill": "#e8971d",
-                "stroke": "#754e12"
+                "fill": "#e8971d"
             },
             "fill-lin": {
                 "fill": {

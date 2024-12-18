@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg version="1.0"
-	 id="svg18800" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg"
-	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="15px" height="14.9989px"
+	 xmlns:cc="http://creativecommons.org/ns#"
+	 xmlns:svg="http://www.w3.org/2000/svg"
+	 xmlns="http://www.w3.org/2000/svg"
 	 viewBox="0 0 15 14.9989" enable-background="new 0 0 15 14.9989" xml:space="preserve">
-<sodipodi:namedview  bordercolor="#666666" borderopacity="1.0" fit-margin-bottom="0" fit-margin-left="0" fit-margin-right="0" fit-margin-top="0" id="base" inkscape:current-layer="layer1" inkscape:cx="-8.3295854" inkscape:cy="6.1745754" inkscape:document-units="mm" inkscape:pageopacity="0.0" inkscape:pageshadow="2" inkscape:window-height="1422" inkscape:window-maximized="0" inkscape:window-width="2560" inkscape:window-x="0" inkscape:window-y="18" inkscape:zoom="15.839192" pagecolor="#ffffff" showgrid="false" units="px">
-	</sodipodi:namedview>
-
 <linearGradient id="grim" gradientUnits="userSpaceOnUse" x1="219.99944" y1="6477.3999" x2="232.99944" y2="6477.3999" gradientTransform="matrix(6.123234e-17 1 1 -6.123234e-17 -6469.8999 -219)">
 	<stop  offset="0" style="stop-color:#ABA9A9"/>
 	<stop  offset="1" style="stop-color:#8F8F8F"/>

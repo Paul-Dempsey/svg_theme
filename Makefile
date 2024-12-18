@@ -7,6 +7,7 @@ SOURCES += src/svg_theme_impl.cpp
 
 # Demo module
 SOURCES += src/Demo.cpp
+SOURCES += src/Clip.cpp
 
 DISTRIBUTABLES += res
 DISTRIBUTABLES += $(wildcard LICENSE*)
