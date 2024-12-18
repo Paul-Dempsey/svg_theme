@@ -1,17 +1,19 @@
 LICENSE
 
-Copyright (c) 2023 Paul Chase Dempsey
+Copyright (c) 2023-2024 Paul Chase Dempsey
 
 Permission is granted to anyone to use this software for any purpose,
 including commercial applications, and to alter it and redistribute it
 freely, subject to the following restrictions:
 
 1. The origin of this software must not be misrepresented; you must not
- claim that you wrote the original software. If you use this software
- in a product, an acknowledgment in the product documentation would be
- appreciated but is not required.
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+
 2. Altered source versions must be plainly marked as such, and must not be
- misrepresented as being the original software.
+   misrepresented as being the original software.
+
 3. This notice may not be removed or altered from any source distribution.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -30,12 +32,12 @@ This software depends on the following:
 
 * Jansson, Copyright (c) 2009-2016 Petri Lehtinen <petri@digip.org> licensed under the MIT license.
   
-The graphics for Screw (and possibly other widgets to come) are derived from the 
+The graphics for Screw is derived from the 
 **Component Library graphics** for Rack, copyright © 2016-2023 [VCV](https://vcvrack.com/) 
 and licensed under [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
 
-All other graphics are Copyright (c) 2023 Paul Chase Dempsey.
-While the overall license for this project is MIT, if you borrow fromt this project, 
-you should acknowledge your use in your product source and documentation.
+All other graphics are Copyright (c) 2023, 2024 Paul Chase Dempsey.
+While the overall license for this project is MIT, if you borrow from this project, 
+you should acknowledge the usage in your product source and documentation.
 It's just the right thing to do.
 
